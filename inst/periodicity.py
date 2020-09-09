@@ -4,7 +4,8 @@ from collections import defaultdict
 from Bio import SeqIO
 import numpy as np
 
-def periodicity(bam,refCDS,refSeq,outFile, versionStrip=False, messages=True):
+def periodicity(bam, refCDS, refSeq, outFile, min_fp_size, max_fp_size, 
+                versionStrip=False, messages=True):
   """
   Metagene analysis at the start site to see if coverage has 3-nt periodicity.
   
@@ -13,6 +14,8 @@ def periodicity(bam,refCDS,refSeq,outFile, versionStrip=False, messages=True):
   bam          type=str  aligned reads (BAM file) 
   refCDS       type=str  CDS annotation (output of bed2table)
   refSeq       type=str  reference transcript sequences (FASTA)
+  min_fp_size             minimum footprint size to consider
+  max_fp_size             maximum footprint size to consider
   versionStrip type=bool indicate if .1, .2, etc should be removed from transcript names                         defaults to False
   
   in output :
@@ -122,7 +125,7 @@ def periodicity(bam,refCDS,refSeq,outFile, versionStrip=False, messages=True):
       if refid in codonLists:
         cdspos = localDic[refid][0] #start position
         #cdsend = localDic[refid][1] #end position
-        if (alignread.pos != None) and (24 <= alignread.alen <= 34):#alignread.alen gives the length of the reads in the BAM file. 
+        if (alignread.pos != None) and (min_fp_size <= alignread.alen <= max_fp_size):#alignread.alen gives the length of the reads in the BAM file. 
           if 1: #fully unnecessary: if not alignread.is_reverse: ###only for the forward strand. Have to do it also for thereverse strand ###
             startpos =  alignread.pos - cdspos # position relative to the start
             #endpos = cdsend - alignread.pos #position relative to the end
@@ -132,17 +135,11 @@ def periodicity(bam,refCDS,refSeq,outFile, versionStrip=False, messages=True):
               #coverEnd[len(alignread.seq)][]
   ###############
   # Table output
-  table=np.array([
-                 range(-20,21),
-                 [coverStart[25][x] for x in range(-20,21)],
-                 [coverStart[26][x] for x in range(-20,21)],
-                 [coverStart[27][x] for x in range(-20,21)],
-                 [coverStart[28][x] for x in range(-20,21)],
-                 [coverStart[29][x] for x in range(-20,21)],
-                 [coverStart[30][x] for x in range(-20,21)],
-                 [coverStart[31][x] for x in range(-20,21)],
-                 [coverStart[32][x] for x in range(-20,21)]
-                 ])
+  tmp_content = [[range(-20,21)]]
+  for size in coverStart:
+    tmp_content.append([coverStart[size][x] for x in range(-20,21)])
+
+  table=np.array(tmp_content)
   
   if messages : 
     print "Coverage around AUG is written in : "
@@ -150,7 +147,8 @@ def periodicity(bam,refCDS,refSeq,outFile, versionStrip=False, messages=True):
     print ""
   
   with open(outFile, 'w') as fout :
-    fout.write("pos\len\t25\t26\t27\t28\t29\t30\t31\t32\n")
+    columns = "\t".join(list(coverStart.keys()))
+    fout.write("pos\len" + columns + "\n")
     for row in table.T: 
       for elt in row :
         fout.write( str(elt)+'\t' )
