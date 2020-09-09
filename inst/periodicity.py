@@ -147,7 +147,7 @@ def periodicity(bam, refCDS, refSeq, outFile, min_fp_size, max_fp_size,
     print ""
   
   with open(outFile, 'w') as fout :
-    columns = "\t".join(map(str,min_fp_size, max_fp_size + 1))
+    columns = "\t".join(map(str,range(min_fp_size, max_fp_size + 1)))
     fout.write("pos\len\t" + columns + "\n")
     for row in table.T: 
       for elt in row :
