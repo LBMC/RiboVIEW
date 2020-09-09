@@ -92,13 +92,14 @@ periodicity_plot <- function(outfile, i, pathout, XP.names, min_fp_size,
   nom <- outfile
   
   OL <- utils::read.table(nom, header = TRUE, row.names = 1, as.is = TRUE)
-  colnames(OL) <- seq(min_fp_size, max_fp_size)
-
+  tmp_colsum <- colSums(OL)
+  OL <- OL[, names(tmp_colsum[tmp_colsum > 0])]
+  colnames(OL) <- as.numeric(substr(colnames(OL), 2, 20))
 
   #
   ## recurrence plot
   #
-  for (pos in seq(min_fp_size, max_fp_size)) {
+  for (pos in colnames(OL)) {
 
     OL.pos.ts <- stats::ts(data=as.numeric(as.vector(OL[,colnames(OL)==pos])), start=-20, end=20, frequency=1)         #deltat=1/3)
 
