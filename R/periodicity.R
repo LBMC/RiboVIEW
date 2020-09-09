@@ -122,11 +122,12 @@ periodicity_plot <- function(outfile, i, pathout, XP.names, min_fp_size,
   }
   plot.rec.png <- paste(pathout, "Sample-", XP.names[i], "_OL-recurr.png" , sep="")
   plot.rec.eps <- paste(pathout, "Sample-", XP.names[i], "_OL-recurr.eps" , sep="")
-  system(paste("montage -mode concatenate -tile 4x2 ",
+  row_numbers <- max_fp_size - min_fp_size + 1
+  system(paste("montage -mode concatenate -tile 4x", row_numbers, " ",
              pathout, "Sample-", XP.names[i], "_OL-recurr_*.png ",
              plot.rec.png,
              sep=""))
-  system(paste("montage -mode concatenate -tile 4x2 ",
+  system(paste("montage -mode concatenate -tile 4x", row_numbers, " ",
              pathout, "Sample-", XP.names[i], "_OL-recurr_*.eps ",
              plot.rec.eps,
              sep=""))
