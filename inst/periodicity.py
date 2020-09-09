@@ -135,8 +135,8 @@ def periodicity(bam, refCDS, refSeq, outFile, min_fp_size, max_fp_size,
               #coverEnd[len(alignread.seq)][]
   ###############
   # Table output
-  tmp_content = [[range(-20,21)]]
-  for size in coverStart:
+  tmp_content = [range(-20,21)]
+  for size in range(min_fp_size, max_fp_size + 1):
     tmp_content.append([coverStart[size][x] for x in range(-20,21)])
 
   table=np.array(tmp_content)
@@ -147,8 +147,8 @@ def periodicity(bam, refCDS, refSeq, outFile, min_fp_size, max_fp_size,
     print ""
   
   with open(outFile, 'w') as fout :
-    columns = "\t".join(map(str,coverStart.keys()))
-    fout.write("pos\len" + columns + "\n")
+    columns = "\t".join(map(str,min_fp_size, max_fp_size + 1))
+    fout.write("pos\len\t" + columns + "\n")
     for row in table.T: 
       for elt in row :
         fout.write( str(elt)+'\t' )
