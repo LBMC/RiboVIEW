@@ -29,6 +29,8 @@
 #                                  studied organism
 #        pathout                 Address where output files will be written.
 #        XP.names                Vector of names for each sample
+#        min_fp_size             minimum footprint size to consider
+#        max_fp_size             maximum footprint size to consider
 #        versionStrip            Indicates if version number should be trimmed, 
 #                                  for example NM_001276351.1 should be trimmed 
 #                                  to NM_001276351 (defaults to FALSE)
@@ -39,7 +41,8 @@
 #           - OL-*_recurr.png    Periodicity recurrence plot for each sample
 #           - OL-*_period.png    Periodicity barplot for each sample
 #
-periodicity <- function(list.bam, refCDS, refFASTA, pathout, XP.names, 
+periodicity <- function(list.bam, refCDS, refFASTA, pathout, XP.names,
+                        min_fp_size, max_fp_size,
                         versionStrip = FALSE, python.messages = TRUE) {
 
   ## Read arguments and determine their number
@@ -49,24 +52,24 @@ periodicity <- function(list.bam, refCDS, refFASTA, pathout, XP.names,
   for (i in 1:n) {
     readsBAM <- argl[[i]]
     outfile <- paste(pathout, "Sample-", XP.names[i], "_OL.txt" , sep="")
-    periodicity_one(readsBAM, refCDS, refFASTA, outfile, versionStrip, 
-                    python.messages)
+    periodicity_one(readsBAM, refCDS, refFASTA, outfile, min_fp_size, 
+                    max_fp_size, versionStrip, python.messages)
 
     # Plots :
     # Recurrence plot and Periodicity plot
-    periodicity_plot(outfile, i, pathout, XP.names)
+    periodicity_plot(outfile, i, pathout, XP.names, min_fp_size, max_fp_size)
 
   }
 }
 
-periodicity_one <- function(readsBAM, refCDS, refFASTA, outfile, 
-                            versionStrip = FALSE,
+periodicity_one <- function(readsBAM, refCDS, refFASTA, outfile, min_fp_size, 
+                            max_fp_size, versionStrip = FALSE,
                             python.messages = TRUE) {
   
   pyPeriodicity_filename <- system.file("periodicity.py", package="RiboVIEW", mustWork = TRUE)
   PythonInR::pyExecfile(pyPeriodicity_filename)
   pyPeriodicity <- PythonInR::pyFunction("periodicity")
-  pyPeriodicity(readsBAM, refCDS, refFASTA, outfile, 
+  pyPeriodicity(readsBAM, refCDS, refFASTA, outfile, min_fp_size, max_fp_size,
                 versionStrip=FALSE, 
                 messages=python.messages)
   #rPython::python.load(system.file("periodicity.py", package="RiboVIEW", mustWork = TRUE))
@@ -78,7 +81,8 @@ periodicity_one <- function(readsBAM, refCDS, refFASTA, outfile,
 #
 #!/bin/R
 
-periodicity_plot <- function(outfile, i, pathout, XP.names) {
+periodicity_plot <- function(outfile, i, pathout, XP.names, min_fp_size, 
+                             max_fp_size) {
   
   # Save and restore graphical parameters if unexpected exit 
   par.prev <- suppressGraphics(par(no.readonly = TRUE))
@@ -88,13 +92,13 @@ periodicity_plot <- function(outfile, i, pathout, XP.names) {
   nom <- outfile
   
   OL <- utils::read.table(nom, header = TRUE, row.names = 1, as.is = TRUE)
-  colnames(OL) <- seq(25,32)
+  colnames(OL) <- seq(min_fp_size, max_fp_size)
 
 
   #
   ## recurrence plot
   #
-  for (pos in seq(25,32)) {
+  for (pos in seq(min_fp_size, max_fp_size)) {
 
     OL.pos.ts <- stats::ts(data=as.numeric(as.vector(OL[,colnames(OL)==pos])), start=-20, end=20, frequency=1)         #deltat=1/3)
 
