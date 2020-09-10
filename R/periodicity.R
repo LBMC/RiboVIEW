@@ -153,14 +153,14 @@ periodicity_plot <- function(outfile, i, pathout, XP.names, min_fp_size,
     graphics::par(las=3)
     graphics::axis(1,at = seq(-18,18,by=9),cex.axis=0.5)
     graphics::par(las=1)
-    graphics::mtext(1, text='position / A-site', line=1.5)
-    graphics::axis(1, at= 45*0:7, line = 3.1, labels=colnames(OL))
-    graphics::mtext(1,text = 'footprint length', line = 5.1)
+    graphics::mtext(1, text='position / A-site', line = 1.5)
+    graphics::axis(1, at= 45*0:colnames(OL)-1, line = 3.1, labels=colnames(OL))
+    graphics::mtext(1, text = 'footprint length', line = 5.1)
     graphics::par(las=3)
     for (i in 2:8) {
       graphics::points((i-1)*45+ as.numeric(row.names(OL)),
              as.vector(OL[,i]),type='h',col='red')
-      graphics::axis(1, at = (i-1)*45 + seq(-18,18,by=9),labels = seq(-18,18,by=9),cex.axis=0.5)
+      graphics::axis(1, at = (i-1) * 45 + seq(-18, 18,by=9),labels = seq(-18,18,by=9),cex.axis=0.5)
     }
   grDevices::dev.off()
   }
